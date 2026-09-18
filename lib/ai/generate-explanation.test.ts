@@ -15,7 +15,7 @@ test("deterministicExplanation describes a real price change for the previous su
     currency: "EUR",
     saving: 2000,
   })
-  assert.match(text, /Supplier A updated the unit price from €2\.00 to €2\.50/)
+  assert.match(text, /Supplier A raised its price to €2\.50/)
   assert.match(text, /Supplier B/)
 })
 
@@ -32,7 +32,7 @@ test("deterministicExplanation never claims a price changed when it didn't", () 
     currency: "EUR",
     saving: 2000,
   })
-  assert.doesNotMatch(text, /updated the unit price/)
-  assert.match(text, /has not changed/)
+  assert.doesNotMatch(text, /raised its price/)
+  assert.match(text, /hasn't changed/)
   assert.match(text, /supA/)
 })

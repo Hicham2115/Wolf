@@ -38,24 +38,19 @@ function pricesEqual(a: number, b: number): boolean {
 export function deterministicExplanation(input: ExplanationInput): string {
   const sameSupplier = input.previousSupplier === input.recommendedSupplier
   const previousSupplierChanged = !pricesEqual(input.previousUnitPrice, input.updatedSupplierUnitPrice)
+  const savingLine = input.saving ? ` You save ${money(input.saving, input.currency)}.` : ""
 
-  if (sameSupplier || previousSupplierChanged) {
-    const priceLine = `${input.previousSupplier} updated the unit price from ${money(input.previousUnitPrice, input.currency)} to ${money(input.updatedSupplierUnitPrice, input.currency)}, changing the total cost from ${money(input.previousTotal, input.currency)} to ${money(input.updatedSupplierTotal, input.currency)}`
+  if (sameSupplier) {
+    return `${input.previousSupplier} changed its price from ${money(input.previousUnitPrice, input.currency)} to ${money(input.updatedSupplierUnitPrice, input.currency)} per unit. New total: ${money(input.updatedSupplierTotal, input.currency)}.`
+  }
 
-    if (sameSupplier) return `${priceLine}.`
-
-    const savingLine = input.saving
-      ? ` This is ${money(input.saving, input.currency)} lower than continuing with ${input.previousSupplier}.`
-      : ""
-    return `${priceLine}. ${input.recommendedSupplier} now offers the same quantity at ${money(input.recommendedUnitPrice, input.currency)} per unit, for a total of ${money(input.recommendedTotal, input.currency)}.${savingLine}`
+  if (previousSupplierChanged) {
+    return `${input.previousSupplier} raised its price to ${money(input.updatedSupplierUnitPrice, input.currency)} per unit. ${input.recommendedSupplier} is now cheaper at ${money(input.recommendedUnitPrice, input.currency)} per unit (${money(input.recommendedTotal, input.currency)} total).${savingLine}`
   }
 
   // Previous supplier's price is unchanged — a different supplier simply
   // offers a better price for the same quantity.
-  const savingLine = input.saving
-    ? ` This is ${money(input.saving, input.currency)} lower than the current approved total with ${input.previousSupplier}.`
-    : ""
-  return `${input.recommendedSupplier} now offers this product at ${money(input.recommendedUnitPrice, input.currency)} per unit, for a total of ${money(input.recommendedTotal, input.currency)}. ${input.previousSupplier}'s price has not changed (still ${money(input.previousUnitPrice, input.currency)}).${savingLine}`
+  return `${input.previousSupplier}'s price hasn't changed. ${input.recommendedSupplier} simply offers a lower price: ${money(input.recommendedUnitPrice, input.currency)} per unit (${money(input.recommendedTotal, input.currency)} total).${savingLine}`
 }
 
 /**
@@ -72,7 +67,7 @@ export async function generateExplanation(input: ExplanationInput): Promise<stri
 
   const previousSupplierChanged = !pricesEqual(input.previousUnitPrice, input.updatedSupplierUnitPrice)
 
-  const prompt = `Write one short, plain sentence (max 40 words) explaining a procurement recommendation change to a buyer. Use ONLY the numbers given below verbatim — do not calculate, round, or invent anything. Keep each supplier's own price separate from the other supplier's price. Do not claim a supplier's price changed if it did not.
+  const prompt = `Write 1-2 very short, plain sentences (max 30 words total) explaining a procurement recommendation change to a busy buyer. Plain, simple words — no jargon, no long clauses. Use ONLY the numbers given below verbatim — do not calculate, round, or invent anything. Keep each supplier's own price separate from the other supplier's price. Do not claim a supplier's price changed if it did not.
 
 ${input.previousSupplier} previous unit price: ${money(input.previousUnitPrice, input.currency)} (total ${money(input.previousTotal, input.currency)})
 ${input.previousSupplier} current unit price: ${money(input.updatedSupplierUnitPrice, input.currency)} (total ${money(input.updatedSupplierTotal, input.currency)})
