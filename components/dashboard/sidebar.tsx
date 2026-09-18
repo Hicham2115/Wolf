@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronLeft } from "lucide-react";
+import { ChevronDown, ChevronLeft, PawPrint } from "lucide-react";
 import { navItems } from "@/lib/nav";
 import { cn } from "cn";
 
@@ -17,7 +17,13 @@ export function DashboardSidebar() {
       >
         <ChevronLeft className="size-4" />
       </button>
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2.5 py-10">
+      <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
+        <PawPrint className="size-5 shrink-0 text-primary" />
+        <span className="text-sm font-semibold tracking-tight text-sidebar-foreground">
+          Wolf Materials
+        </span>
+      </div>
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2.5 py-4">
         <div className="mb-2 flex items-center gap-2 px-2 text-xs font-bold tracking-tight text-sidebar-foreground">
           <ChevronDown className="size-3.5" /> TENDER 2026
         </div>
@@ -41,16 +47,16 @@ export function DashboardSidebar() {
                 )}
               />
               {item.label}
-              {item.label === "Overview" && (
+              {/* {item.label === "Overview" && (
                 <span className="ml-auto rounded-sm bg-[#301e18] px-1.5 py-0.5 text-xs font-semibold text-red-500">
                   Demo
                 </span>
-              )}
-              {item.label === "Supply Chain" && (
+              )} */}
+              {/* {item.label === "Supply Chain" && (
                 <span className="ml-auto rounded-sm bg-[#302e17] px-1.5 py-0.5 text-xs font-semibold text-amber-500">
                   New
                 </span>
-              )}
+              )} */}
             </Link>
           );
         })}
