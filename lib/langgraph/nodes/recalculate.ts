@@ -17,7 +17,7 @@ export async function recalculate(
   for (const decisionId of state.affectedDecisionIds) {
     const { data: decision, error: decisionError } = await db
       .from("decisions")
-      .select("id, product_id, recommended_supplier_id, unit_price, total_price, current_version")
+      .select("id, product_id, recommended_supplier_id, unit_price, total_price, current_version, status")
       .eq("id", decisionId)
       .single()
     if (decisionError) throw decisionError
@@ -53,13 +53,13 @@ export async function recalculate(
       (recommendation.supplierId !== decision.recommended_supplier_id ||
         recommendation.totalPrice !== Number(decision.total_price))
 
-    const isFirstVersion = decision.current_version === 0
-
     outcomes.push({
       decisionId: decision.id,
       productId: decision.product_id,
       changed,
-      status: changed ? (isFirstVersion ? "REVIEW_REQUIRED" : "STALE") : "UNCHANGED",
+      status: changed ? "REVIEW_REQUIRED" : "UNCHANGED",
+      invalidatesApprovedVersion: changed && decision.status === "APPROVED",
+      previousVersion: decision.current_version,
       previousSupplierId: decision.recommended_supplier_id,
       previousTotal: decision.total_price === null ? null : Number(decision.total_price),
       previousUnitPrice: decision.unit_price === null ? null : Number(decision.unit_price),

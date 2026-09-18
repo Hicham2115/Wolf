@@ -3,6 +3,12 @@ import { compareOffers, savingVsPrevious } from "@/lib/procurement/calculations"
 import { getDashboardMetrics } from "@/lib/procurement/get-metrics"
 import type { SupplierOfferRow, DashboardMetrics } from "@/lib/procurement/types"
 
+const EVIDENCE_FIELD_LABELS: Record<string, string> = {
+  unit_price: "Unit price",
+  quantity: "Quantity",
+  currency: "Currency",
+}
+
 /**
  * This MVP tracks a single procurement decision at a time. Rather than
  * hardcoding its id, we look up whatever decision currently exists so the
@@ -219,10 +225,9 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
           { label: "Product", value: productName },
           { label: "Supplier", value: source.suppliers?.name ?? source.supplier_id },
           ...evidenceRows.map((e) => ({
-            label: e.field_name === "unit_price" ? "Unit price" : "Quantity",
+            label: EVIDENCE_FIELD_LABELS[e.field_name] ?? e.field_name,
             value: e.field_value,
           })),
-          { label: "Currency", value: decision.currency ?? "EUR" },
         ],
       }
     }

@@ -5,7 +5,11 @@ export type DecisionOutcome = {
   decisionId: string
   productId: string
   changed: boolean
-  status: "REVIEW_REQUIRED" | "STALE" | "UNCHANGED"
+  /** The new version's status — always REVIEW_REQUIRED when something changed. */
+  status: "REVIEW_REQUIRED" | "UNCHANGED"
+  /** True if the version being superseded was APPROVED, so it should be marked STALE. */
+  invalidatesApprovedVersion: boolean
+  previousVersion: number
   previousSupplierId: string | null
   previousTotal: number | null
   previousUnitPrice: number | null

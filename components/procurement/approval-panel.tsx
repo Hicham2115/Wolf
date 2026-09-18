@@ -10,6 +10,7 @@ export function ApprovalPanel({
   approvedAt,
   onApprove,
   onReject,
+  approvePending,
 }: {
   status: DecisionStatus
   recommendedSupplier: string
@@ -17,6 +18,7 @@ export function ApprovalPanel({
   approvedAt?: string
   onApprove: () => void
   onReject: () => void
+  approvePending?: boolean
 }) {
   return (
     <Card id="approval">
@@ -32,8 +34,10 @@ export function ApprovalPanel({
       <CardContent>
         {status === "stale" && (
           <div className="flex flex-wrap gap-2">
-            <Button onClick={onApprove}>Approve {recommendedSupplier}</Button>
-            <Button variant="outline" onClick={onReject}>
+            <Button onClick={onApprove} disabled={approvePending}>
+              {approvePending ? "Approving..." : `Approve ${recommendedSupplier}`}
+            </Button>
+            <Button variant="outline" onClick={onReject} disabled={approvePending}>
               Reject
             </Button>
           </div>

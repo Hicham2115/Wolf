@@ -26,7 +26,7 @@ async function postJson(url: string, body?: unknown) {
 
 export function DecisionClient({ initial }: { initial: DecisionView }) {
   const [view, setView] = useState(initial)
-  const [busy, setBusy] = useState(false)
+  const [approving, setApproving] = useState(false)
 
   async function refresh() {
     const res = await fetch(`/api/decisions/${view.decisionId}`)
@@ -34,7 +34,7 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
   }
 
   async function handleApprove() {
-    setBusy(true)
+    setApproving(true)
     try {
       await postJson(`/api/decisions/${view.decisionId}/approve`, {
         approvedBy: "Current buyer",
@@ -44,21 +44,22 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
       toast.success("Decision approved.")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Approval failed")
+      // The decision likely moved on while this was open (a newer supplier
+      // update arrived) — reload so the buyer reviews the current version
+      // instead of acting on stale data again.
+      await refresh()
     } finally {
-      setBusy(false)
+      setApproving(false)
     }
   }
 
   async function handleReject() {
-    setBusy(true)
     try {
       await postJson(`/api/decisions/${view.decisionId}/reject`, { rejectedBy: "Current buyer" })
       await refresh()
       toast.error("Recommendation rejected.")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not reject")
-    } finally {
-      setBusy(false)
     }
   }
 
@@ -89,6 +90,8 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
         approvedBy={view.approvedBy ?? undefined}
         approvedAt={view.approvedAt ?? undefined}
         sourceVersion={view.sourceVersion ?? undefined}
+        onApprove={handleApprove}
+        approvePending={approving}
       />
 
       {view.priceChange && <DecisionStatus {...view.priceChange} />}
@@ -114,9 +117,14 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
         approvedAt={view.approvedAt ?? undefined}
         onApprove={handleApprove}
         onReject={handleReject}
+        approvePending={approving}
       />
 
-      <EventHistory events={view.history} />
+      <EventHistory
+        decisionId={view.decisionId}
+        events={view.history}
+        onCleared={refresh}
+      />
     </div>
   )
 }

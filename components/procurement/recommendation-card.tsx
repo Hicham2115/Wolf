@@ -1,5 +1,5 @@
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react"
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "cn"
 import {
@@ -24,6 +24,8 @@ export function RecommendationCard({
   approvedBy,
   approvedAt,
   sourceVersion,
+  onApprove,
+  approvePending,
 }: {
   status: DecisionStatus
   product: string
@@ -35,6 +37,8 @@ export function RecommendationCard({
   approvedBy?: string
   approvedAt?: string
   sourceVersion?: string
+  onApprove: () => void
+  approvePending?: boolean
 }) {
   const isApproved = status === "approved"
   const isRejected = status === "rejected"
@@ -124,9 +128,9 @@ export function RecommendationCard({
             <a href="#evidence" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
               Review decision
             </a>
-            <a href="#approval" className={cn(buttonVariants({ size: "sm" }))}>
-              Approve
-            </a>
+            <Button size="sm" onClick={onApprove} disabled={approvePending}>
+              {approvePending ? "Approving..." : "Approve"}
+            </Button>
           </div>
         )}
       </CardFooter>

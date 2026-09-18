@@ -10,7 +10,6 @@ import {
   FileText,
   Scale,
   FileSignature,
-  ShoppingCart,
 } from "lucide-react";
 
 export type NavItem = {
@@ -38,6 +37,4 @@ export const navItems: NavItem[] = [
   { label: "Tender", href: "/dashboard/tender", icon: FileText },
   { label: "Contracts", href: "/dashboard/contracts", icon: FileSignature },
   { label: "Decision", href: "/dashboard/decision", icon: Scale },
-  { label: "Maturity", href: "/dashboard/maturity", icon: GitBranch },
-  { label: "Components", href: "/dashboard/components", icon: ShoppingCart },
 ];

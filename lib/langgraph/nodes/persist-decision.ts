@@ -2,9 +2,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ProcurementState } from "@/lib/langgraph/state";
 
 /**
- * Writes the outcomes of recalculate(): marks changed decisions STALE with
- * their new recommendation, records a decision_versions snapshot, and logs
- * evidence pointing back to the source row the new numbers came from.
+ * Writes the outcomes of recalculate(). An approved decision is historical
+ * evidence and is never silently overwritten: the old version is marked
+ * STALE, a new version is created as REVIEW_REQUIRED, and evidence points
+ * back to the source row the new numbers came from.
  */
 export async function persistDecisions(
   db: SupabaseClient,
@@ -22,6 +23,14 @@ export async function persistDecisions(
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    if (outcome.invalidatesApprovedVersion) {
+      await db
+        .from("decision_versions")
+        .update({ status: "STALE" })
+        .eq("decision_id", outcome.decisionId)
+        .eq("version", outcome.previousVersion);
+    }
 
     await db
       .from("decisions")
@@ -68,6 +77,14 @@ export async function persistDecisions(
           source_row: offerRow.source_row,
           field_name: "quantity",
           field_value: String(rec.quantity),
+        },
+        {
+          decision_id: outcome.decisionId,
+          decision_version: outcome.version,
+          source_id: offerRow.source_id,
+          source_row: offerRow.source_row,
+          field_name: "currency",
+          field_value: rec.currency,
         },
       ]);
     }

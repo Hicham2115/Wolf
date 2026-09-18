@@ -21,7 +21,7 @@ export function DashboardSidebar() {
         <div className="mb-2 flex items-center gap-2 px-2 text-xs font-bold tracking-tight text-sidebar-foreground">
           <ChevronDown className="size-3.5" /> TENDER 2026
         </div>
-        {navItems.slice(0, 10).map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
           return (
@@ -34,7 +34,12 @@ export function DashboardSidebar() {
                   "bg-sidebar-accent font-semibold text-sidebar-accent-foreground",
               )}
             >
-              <Icon className="size-4.5 shrink-0 text-sidebar-foreground/55" />
+              <Icon
+                className={cn(
+                  "size-4.5 shrink-0 text-sidebar-foreground/55",
+                  isActive && "text-sidebar-accent-foreground",
+                )}
+              />
               {item.label}
               {item.label === "Overview" && (
                 <span className="ml-auto rounded-sm bg-[#301e18] px-1.5 py-0.5 text-xs font-semibold text-red-500">
@@ -46,27 +51,6 @@ export function DashboardSidebar() {
                   New
                 </span>
               )}
-            </Link>
-          );
-        })}
-        <div className="mb-2 mt-5 px-2 text-xs font-bold tracking-tight text-sidebar-foreground/55">
-          ENABLEMENT
-        </div>
-        {navItems.slice(10).map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex min-h-10 items-center gap-3 rounded-sm px-2.5 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                isActive &&
-                  "bg-sidebar-accent font-semibold text-sidebar-accent-foreground",
-              )}
-            >
-              <Icon className="size-4.5 shrink-0 text-sidebar-foreground/55" />
-              {item.label}
             </Link>
           );
         })}

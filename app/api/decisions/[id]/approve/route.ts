@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/server"
+import { canApprove } from "@/lib/procurement/approval-guard"
 
 /**
  * A buyer approval is only valid against the decision version they actually
@@ -22,21 +23,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!decision) return NextResponse.json({ error: `Decision "${id}" not found` }, { status: 404 })
 
-  if (decision.status !== "STALE" && decision.status !== "REVIEW_REQUIRED") {
-    return NextResponse.json(
-      { error: "This decision is not awaiting approval." },
-      { status: 409 }
-    )
-  }
-
-  if (expectedVersion !== undefined && expectedVersion !== decision.current_version) {
-    return NextResponse.json(
-      {
-        error:
-          "This decision is no longer current. Please review the latest evidence.",
-      },
-      { status: 409 }
-    )
+  const guard = canApprove(decision, expectedVersion)
+  if (!guard.ok) {
+    return NextResponse.json({ error: guard.reason }, { status: 409 })
   }
 
   const approvedAt = new Date().toISOString()

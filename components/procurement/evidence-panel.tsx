@@ -1,3 +1,4 @@
+import { Sparkles } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { SourceDialog } from "@/components/procurement/source-dialog"
 
@@ -49,7 +50,13 @@ export function EvidencePanel({
         </dl>
 
         {explanation && (
-          <p className="mt-4 border-t pt-4 text-sm text-muted-foreground">{explanation}</p>
+          <div className="mt-4 border-t pt-4">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Sparkles className="size-3" />
+              Explanation
+            </div>
+            <p className="mt-1.5 text-sm text-muted-foreground">{explanation}</p>
+          </div>
         )}
 
         <div className="mt-4">
