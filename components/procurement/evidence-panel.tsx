@@ -1,9 +1,7 @@
-import { ChevronDown } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { SourceDialog } from "@/components/procurement/source-dialog"
 
 export function EvidencePanel({
-  trail,
   source,
   version,
   row,
@@ -12,7 +10,6 @@ export function EvidencePanel({
   explanation,
   previewColumns,
 }: {
-  trail: string[]
   source: string
   version: string
   row: number
@@ -28,20 +25,7 @@ export function EvidencePanel({
         <CardDescription>Where this recommendation came from.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col items-start gap-1">
-          {trail.map((step, index) => (
-            <div key={`${step}-${index}`} className="flex flex-col items-start">
-              <span className="rounded-md border bg-muted/50 px-3 py-1.5 text-sm font-medium">
-                {step}
-              </span>
-              {index < trail.length - 1 && (
-                <ChevronDown className="my-0.5 ml-3 size-4 text-muted-foreground" />
-              )}
-            </div>
-          ))}
-        </div>
-
-        <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 border-t pt-4 sm:grid-cols-3">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
           <div>
             <dt className="text-xs text-muted-foreground">Source</dt>
             <dd className="mt-0.5 text-sm font-medium">{source}</dd>

@@ -43,7 +43,6 @@ export type DecisionView = {
   } | null
   changeSummary: { field: string; previous: string; current: string; changed: boolean }[]
   evidence: {
-    trail: string[]
     source: string
     version: string
     row: number
@@ -190,17 +189,6 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
     } | null
     if (source) {
       evidence = {
-        trail: [
-          source.filename,
-          `Source version v${source.version}`,
-          `Row ${first.source_row}`,
-          productName,
-          ...evidenceRows
-            .filter((e) => e.field_name === "unit_price")
-            .map((e) => `€${Number(e.field_value).toFixed(2)}`),
-          "Recommendation",
-          "Decision",
-        ],
         source: source.filename,
         version: `v${source.version}`,
         row: first.source_row,

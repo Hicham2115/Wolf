@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Upload } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -13,47 +14,48 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  SupplierCsvUploadError,
+  useUploadSupplierCsv,
+  type UploadSupplierCsvResult,
+} from "@/hooks/use-upload-supplier-csv"
 
 export function UploadCsvDialog({
   onUploaded,
   trigger,
 }: {
-  onUploaded: (result: { duplicate: boolean; message: string }) => void
+  onUploaded: (result: UploadSupplierCsvResult) => void
   trigger?: React.ReactElement
 }) {
   const [open, setOpen] = useState(false)
   const [supplierName, setSupplierName] = useState("")
   const [file, setFile] = useState<File | null>(null)
-  const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
+  const uploadCsv = useUploadSupplierCsv()
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!file || !supplierName.trim()) return
-    setBusy(true)
     setErrors([])
-    try {
-      const form = new FormData()
-      form.set("file", file)
-      form.set("supplierName", supplierName.trim())
 
-      const res = await fetch("/api/supplier/upload", { method: "POST", body: form })
-      const data = await res.json()
-
-      if (!res.ok) {
-        const details = Array.isArray(data.details)
-          ? data.details.map((d: { row: number; message: string }) => `Row ${d.row}: ${d.message}`)
-          : [data.error ?? "Upload failed"]
-        setErrors(details)
-        return
+    uploadCsv.mutate(
+      { file, supplierName },
+      {
+        onSuccess: (data) => {
+          onUploaded(data)
+          setOpen(false)
+          setFile(null)
+        },
+        onError: (error) => {
+          const details =
+            error instanceof SupplierCsvUploadError
+              ? error.details
+              : [error.message]
+          setErrors(details)
+          toast.error(details[0])
+        },
       }
-
-      onUploaded(data)
-      setOpen(false)
-      setFile(null)
-    } finally {
-      setBusy(false)
-    }
+    )
   }
 
   return (
@@ -98,8 +100,11 @@ export function UploadCsvDialog({
             </ul>
           )}
 
-          <Button type="submit" disabled={!file || !supplierName.trim() || busy}>
-            {busy ? "Uploading..." : "Upload and process"}
+          <Button
+            type="submit"
+            disabled={!file || !supplierName.trim() || uploadCsv.isPending}
+          >
+            {uploadCsv.isPending ? "Uploading..." : "Upload and process"}
           </Button>
         </form>
       </DialogContent>

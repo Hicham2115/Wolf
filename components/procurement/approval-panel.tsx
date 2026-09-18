@@ -10,7 +10,6 @@ export function ApprovalPanel({
   approvedAt,
   onApprove,
   onReject,
-  onCorrectData,
 }: {
   status: DecisionStatus
   recommendedSupplier: string
@@ -18,7 +17,6 @@ export function ApprovalPanel({
   approvedAt?: string
   onApprove: () => void
   onReject: () => void
-  onCorrectData: () => void
 }) {
   return (
     <Card id="approval">
@@ -36,9 +34,6 @@ export function ApprovalPanel({
             <Button onClick={onApprove}>Approve {recommendedSupplier}</Button>
             <Button variant="outline" onClick={onReject}>
               Reject
-            </Button>
-            <Button variant="ghost" onClick={onCorrectData}>
-              Correct data
             </Button>
           </div>
         ) : (

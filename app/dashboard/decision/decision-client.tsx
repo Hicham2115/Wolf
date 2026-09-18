@@ -81,10 +81,6 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
     }
   }
 
-  function handleCorrectData() {
-    toast.info("Correction requested. Sourcing team notified.")
-  }
-
   async function handleReplay(): Promise<string> {
     try {
       const result = await postJson("/api/events/replay")
@@ -132,7 +128,6 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
       {view.changeSummary.length > 0 && <ChangeSummary fields={view.changeSummary} />}
       {view.evidence && (
         <EvidencePanel
-          trail={view.evidence.trail}
           source={view.evidence.source}
           version={view.evidence.version}
           row={view.evidence.row}
@@ -152,7 +147,6 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
         approvedAt={view.approvedAt ?? undefined}
         onApprove={handleApprove}
         onReject={handleReject}
-        onCorrectData={handleCorrectData}
       />
 
       <EventHistory events={view.history} onReplay={handleReplay} />
