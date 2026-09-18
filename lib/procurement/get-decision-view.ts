@@ -84,12 +84,51 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
   if (!decision) return null
 
   const productName = (decision.products as unknown as { name: string } | null)?.name ?? decision.product_id
+  const isStalePreview = decision.status === "STALE" || decision.status === "REVIEW_REQUIRED"
 
-  const { data: offerRows } = await db
-    .from("supplier_offers")
-    .select("supplier_id, product_id, source_id, source_row, quantity, unit_price, currency, created_at, suppliers(name)")
-    .eq("product_id", decision.product_id)
-    .order("created_at", { ascending: false })
+  // None of these depend on each other — only on the decision row we
+  // already have — so fetch them all in one round trip instead of one
+  // after another.
+  const [
+    { data: offerRows },
+    { data: prev },
+    { data: evidenceRows },
+    { data: currentVersionRow },
+    { data: events },
+    { data: approvals },
+    { data: versions },
+    metrics,
+  ] = await Promise.all([
+    db
+      .from("supplier_offers")
+      .select("supplier_id, product_id, source_id, source_row, quantity, unit_price, currency, created_at, suppliers(name)")
+      .eq("product_id", decision.product_id)
+      .order("created_at", { ascending: false }),
+    isStalePreview && decision.current_version > 1
+      ? db
+          .from("decision_versions")
+          .select("supplier_id, unit_price, total_price, source_id, suppliers(name)")
+          .eq("decision_id", decisionId)
+          .eq("version", decision.current_version - 1)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    db
+      .from("evidence")
+      .select("source_row, field_name, field_value, source_id, supplier_sources(filename, version, created_at, supplier_id, suppliers(name))")
+      .eq("decision_id", decisionId)
+      .eq("decision_version", decision.current_version)
+      .order("created_at", { ascending: false }),
+    db
+      .from("decision_versions")
+      .select("explanation")
+      .eq("decision_id", decisionId)
+      .eq("version", decision.current_version)
+      .maybeSingle(),
+    db.from("events").select("id, event_type, payload, status, created_at, processed_at").eq("decision_id", decisionId).order("created_at", { ascending: true }),
+    db.from("approvals").select("id, decision_version, approved_by, approved_at, status").eq("decision_id", decisionId).order("approved_at", { ascending: true }),
+    db.from("decision_versions").select("id, version, status, created_at, suppliers(name)").eq("decision_id", decisionId).order("created_at", { ascending: true }),
+    getDashboardMetrics(),
+  ])
 
   const latestPerSupplier = new Map<string, NonNullable<typeof offerRows>[number]>()
   for (const row of offerRows ?? []) {
@@ -116,12 +155,6 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
   let previousVersion: { supplier_id: string; unit_price: number; total_price: number; source_id: string } | null = null
 
   if (isStale && decision.current_version > 1) {
-    const { data: prev } = await db
-      .from("decision_versions")
-      .select("supplier_id, unit_price, total_price, source_id, suppliers(name)")
-      .eq("decision_id", decisionId)
-      .eq("version", decision.current_version - 1)
-      .maybeSingle()
     if (prev) {
       previousVersion = prev
       const prevSupplierName = (prev.suppliers as unknown as { name: string } | null)?.name ?? prev.supplier_id
@@ -163,20 +196,6 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
       },
     ]
   }
-
-  const { data: evidenceRows } = await db
-    .from("evidence")
-    .select("source_row, field_name, field_value, source_id, supplier_sources(filename, version, created_at, supplier_id, suppliers(name))")
-    .eq("decision_id", decisionId)
-    .eq("decision_version", decision.current_version)
-    .order("created_at", { ascending: false })
-
-  const { data: currentVersionRow } = await db
-    .from("decision_versions")
-    .select("explanation")
-    .eq("decision_id", decisionId)
-    .eq("version", decision.current_version)
-    .maybeSingle()
 
   let evidence: DecisionView["evidence"] = null
   if (evidenceRows && evidenceRows.length > 0) {
@@ -233,12 +252,6 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
     }
   })
 
-  const [{ data: events }, { data: approvals }, { data: versions }] = await Promise.all([
-    db.from("events").select("id, event_type, payload, status, created_at, processed_at").eq("decision_id", decisionId).order("created_at", { ascending: true }),
-    db.from("approvals").select("id, decision_version, approved_by, approved_at, status").eq("decision_id", decisionId).order("approved_at", { ascending: true }),
-    db.from("decision_versions").select("id, version, status, created_at, suppliers(name)").eq("decision_id", decisionId).order("created_at", { ascending: true }),
-  ])
-
   const history: DecisionView["history"] = []
   for (const e of events ?? []) {
     history.push({
@@ -273,7 +286,7 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
   return {
     decisionId,
     currentVersion: decision.current_version,
-    metrics: await getDashboardMetrics(),
+    metrics,
     status: isRejected ? "rejected" : isStale ? "stale" : "approved",
     product: productName,
     quantity: Number(decision.quantity),
