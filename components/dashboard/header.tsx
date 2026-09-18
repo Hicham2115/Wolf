@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Info, Boxes } from "lucide-react";
+import { Menu, Info, PawPrint } from "lucide-react";
 import { navItems } from "@/lib/nav";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +30,7 @@ export function DashboardHeader() {
           <SheetContent side="left" className="w-64 p-0">
             <SheetTitle className="sr-only">Navigation</SheetTitle>
             <div className="flex h-14 items-center gap-2 border-b px-4">
-              <Boxes className="size-5" />
+              <PawPrint className="size-5" />
               <span className="font-heading text-sm font-semibold">
                 Wolf Materials
               </span>
