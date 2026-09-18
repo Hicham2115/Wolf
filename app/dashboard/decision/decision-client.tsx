@@ -11,6 +11,7 @@ import { SupplierComparison } from "@/components/procurement/supplier-comparison
 import { ApprovalPanel } from "@/components/procurement/approval-panel"
 import { EventHistory } from "@/components/procurement/event-history"
 import { UploadCsvDialog } from "@/components/procurement/upload-csv-dialog"
+import { DecisionHowItWorks, DecisionWorkflow } from "@/components/procurement/decision-workflow"
 import type { DecisionView } from "@/lib/procurement/get-decision-view"
 
 async function postJson(url: string, body?: unknown) {
@@ -101,6 +102,8 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
         approvePending={approving}
       />
 
+      <DecisionWorkflow status={view.status} />
+
       {view.priceChange && <DecisionStatus {...view.priceChange} />}
       {view.changeSummary.length > 0 && <ChangeSummary fields={view.changeSummary} />}
       {view.evidence && (
@@ -137,6 +140,8 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
         events={view.history}
         onCleared={refresh}
       />
+
+      <DecisionHowItWorks />
     </div>
   )
 }

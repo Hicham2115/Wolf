@@ -10,16 +10,18 @@ const EVIDENCE_FIELD_LABELS: Record<string, string> = {
 }
 
 /**
- * This MVP tracks a single procurement decision at a time. Rather than
- * hardcoding its id, we look up whatever decision currently exists so the
- * app works from a freshly wiped database too.
+ * This MVP shows a single procurement decision at a time rather than a
+ * list. Rather than hardcoding its id, we show whichever decision was most
+ * recently touched — so uploading a CSV for a new or different product
+ * actually surfaces on the page instead of leaving an older decision
+ * pinned there.
  */
 export async function getPrimaryDecisionId(): Promise<string | null> {
   const db = createServiceClient()
   const { data } = await db
     .from("decisions")
     .select("id")
-    .order("created_at", { ascending: true })
+    .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle()
   return data?.id ?? null
