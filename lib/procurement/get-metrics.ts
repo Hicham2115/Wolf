@@ -3,18 +3,22 @@ import type { DashboardMetrics } from "@/lib/procurement/types"
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const db = createServiceClient()
-  const { data } = await db.from("decisions").select("status, approved_at, current_version")
-  const rows = data ?? []
-
   const now = new Date()
-  const approvedThisMonth = rows.filter((row) => {
-    if (row.status !== "APPROVED" || !row.approved_at) return false
-    const approvedAt = new Date(row.approved_at)
-    return (
-      approvedAt.getUTCFullYear() === now.getUTCFullYear() &&
-      approvedAt.getUTCMonth() === now.getUTCMonth()
-    )
-  }).length
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString()
+
+  const [{ data }, { count }] = await Promise.all([
+    db.from("decisions").select("status, approved_at, current_version"),
+    // Counts individual approval events (from the audit log), not decisions
+    // currently sitting in APPROVED status — a decision that goes stale and
+    // gets re-approved should count twice, not overwrite the first approval.
+    db
+      .from("approvals")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "APPROVED")
+      .gte("approved_at", monthStart),
+  ])
+  const rows = data ?? []
+  const approvedThisMonth = count ?? 0
 
   return {
     openDecisions: rows.filter((row) => row.status !== "REJECTED").length,
