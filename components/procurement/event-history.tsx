@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
@@ -35,12 +36,14 @@ export function EventHistory({
   events: HistoryEvent[]
   onCleared: () => void
 }) {
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const clearHistory = useClearDecisionHistory()
 
   function handleClear() {
     clearHistory.mutate(decisionId, {
       onSuccess: () => {
         toast.success("Event history cleared.")
+        setConfirmOpen(false)
         onCleared()
       },
       onError: (error) => toast.error(error.message),
@@ -56,7 +59,7 @@ export function EventHistory({
         </CardDescription>
         {events.length > 0 && (
           <CardAction>
-            <AlertDialog>
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
               <AlertDialogTrigger
                 render={<Button variant="ghost" size="sm" />}
               >
