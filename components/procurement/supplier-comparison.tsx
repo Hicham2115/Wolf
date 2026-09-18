@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cn } from "cn"
 import { formatEUR } from "@/lib/format"
@@ -20,13 +21,22 @@ const statusBadgeClass: Record<SupplierOffer["status"], string> = {
   Available: "",
 }
 
-export function SupplierComparison({ suppliers }: { suppliers: SupplierOffer[] }) {
+export function SupplierComparison({
+  suppliers,
+  onApprove,
+  approvePending,
+}: {
+  suppliers: SupplierOffer[]
+  onApprove?: (supplierId: string) => void
+  approvePending?: boolean
+}) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Supplier comparison</CardTitle>
         <CardDescription>
-          Offers evaluated for this product and quantity.
+          Offers evaluated for this product and quantity. The recommendation
+          is advisory — you can approve any supplier here.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -38,6 +48,7 @@ export function SupplierComparison({ suppliers }: { suppliers: SupplierOffer[] }
               <TableHead>Total</TableHead>
               <TableHead>Saving</TableHead>
               <TableHead>Status</TableHead>
+              {onApprove && <TableHead className="text-right">Action</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -45,7 +56,8 @@ export function SupplierComparison({ suppliers }: { suppliers: SupplierOffer[] }
               <TableRow
                 key={supplier.id}
                 className={cn(
-                  supplier.status === "Recommended" && "bg-emerald-500/10"
+                  (supplier.status === "Recommended" || supplier.status === "Approved") &&
+                    "bg-emerald-500/10"
                 )}
               >
                 <TableCell className="font-medium">{supplier.name}</TableCell>
@@ -62,6 +74,22 @@ export function SupplierComparison({ suppliers }: { suppliers: SupplierOffer[] }
                     {supplier.status}
                   </Badge>
                 </TableCell>
+                {onApprove && (
+                  <TableCell className="text-right">
+                    {supplier.status === "Approved" ? (
+                      <span className="text-xs text-muted-foreground">Current</span>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onApprove(supplier.id)}
+                        disabled={approvePending}
+                      >
+                        Approve
+                      </Button>
+                    )}
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

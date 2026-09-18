@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Loader2, Upload } from "lucide-react"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -52,7 +51,6 @@ export function UploadCsvDialog({
               ? error.details
               : [error.message]
           setErrors(details)
-          toast.error(details[0])
         },
       }
     )

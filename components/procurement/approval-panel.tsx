@@ -1,11 +1,23 @@
+"use client"
+
+import { useState } from "react"
 import { CheckCircle2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import type { DecisionStatusValue as DecisionStatus } from "@/lib/procurement/types"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { formatEUR } from "@/lib/format"
+import type { DecisionStatusValue as DecisionStatus, SupplierComparisonRow } from "@/lib/procurement/types"
 
 export function ApprovalPanel({
   status,
   recommendedSupplier,
+  suppliers,
   approvedBy,
   approvedAt,
   onApprove,
@@ -14,12 +26,21 @@ export function ApprovalPanel({
 }: {
   status: DecisionStatus
   recommendedSupplier: string
+  suppliers: SupplierComparisonRow[]
   approvedBy?: string
   approvedAt?: string
-  onApprove: () => void
+  onApprove: (supplierId: string) => void
   onReject: () => void
   approvePending?: boolean
 }) {
+  const recommendedId =
+    suppliers.find((s) => s.status === "Recommended" || s.status === "Approved")?.id ??
+    suppliers[0]?.id ??
+    ""
+  const [selectedId, setSelectedId] = useState(recommendedId)
+  const selected = suppliers.find((s) => s.id === selectedId)
+  const isOverride = selected && selected.name !== recommendedSupplier
+
   return (
     <Card id="approval">
       <CardHeader>
@@ -33,13 +54,39 @@ export function ApprovalPanel({
       </CardHeader>
       <CardContent>
         {status === "stale" && (
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={onApprove} disabled={approvePending}>
-              {approvePending ? "Approving..." : `Approve ${recommendedSupplier}`}
-            </Button>
-            <Button variant="outline" onClick={onReject} disabled={approvePending}>
-              Reject
-            </Button>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value={selectedId} onValueChange={(v) => setSelectedId(v as string)}>
+                <SelectTrigger className="w-56">
+                  <SelectValue placeholder="Choose a supplier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {suppliers.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name} — {formatEUR(s.unitPrice)}/unit ({formatEUR(s.total)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-xs text-muted-foreground">
+                System recommends {recommendedSupplier}. You can approve a
+                different supplier if you have reason to.
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={() => onApprove(selectedId)}
+                disabled={approvePending || !selectedId}
+              >
+                {approvePending
+                  ? "Approving..."
+                  : `Approve ${selected?.name ?? recommendedSupplier}${isOverride ? " (override)" : ""}`}
+              </Button>
+              <Button variant="outline" onClick={onReject} disabled={approvePending}>
+                Reject
+              </Button>
+            </div>
           </div>
         )}
         {status === "approved" && (

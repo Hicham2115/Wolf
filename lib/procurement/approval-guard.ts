@@ -6,14 +6,16 @@ export type ApprovalGuardResult = { ok: true } | { ok: false; reason: string }
  * approval from silently landing on outdated supplier data — the API route
  * enforces it against the database, this function is the reusable/testable
  * core of that rule.
+ *
+ * The buyer can approve (or switch to) any supplier at any time — the
+ * system's recommendation is advisory, not binding. The only hard
+ * requirement is that they're acting on the current version of the
+ * decision, not a stale page they had open.
  */
 export function canApprove(
-  decision: { status: string; current_version: number },
+  decision: { current_version: number },
   expectedVersion: number | undefined
 ): ApprovalGuardResult {
-  if (decision.status !== "STALE" && decision.status !== "REVIEW_REQUIRED") {
-    return { ok: false, reason: "This decision is not awaiting approval." }
-  }
   if (expectedVersion !== undefined && expectedVersion !== decision.current_version) {
     return {
       ok: false,

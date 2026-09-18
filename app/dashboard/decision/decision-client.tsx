@@ -33,12 +33,13 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
     if (res.ok) setView(await res.json())
   }
 
-  async function handleApprove() {
+  async function handleApprove(supplierId?: string) {
     setApproving(true)
     try {
       await postJson(`/api/decisions/${view.decisionId}/approve`, {
         approvedBy: "Current buyer",
         expectedVersion: view.currentVersion,
+        supplierId,
       })
       await refresh()
       toast.success("Decision approved.")
@@ -63,12 +64,18 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
     }
   }
 
-  async function handleUploaded(result: { duplicate: boolean; message: string }) {
+  async function handleUploaded(result: {
+    duplicate: boolean
+    message: string
+    outcomes: { changed: boolean }[]
+  }) {
     await refresh()
     if (result.duplicate) {
       toast.info(result.message)
-    } else {
+    } else if (result.outcomes.some((o) => o.changed)) {
       toast.warning("Supplier update detected. 1 decision requires review.")
+    } else {
+      toast.success("Supplier data updated. No change to the current recommendation.")
     }
   }
 
@@ -90,7 +97,7 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
         approvedBy={view.approvedBy ?? undefined}
         approvedAt={view.approvedAt ?? undefined}
         sourceVersion={view.sourceVersion ?? undefined}
-        onApprove={handleApprove}
+        onApprove={() => handleApprove()}
         approvePending={approving}
       />
 
@@ -108,11 +115,16 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
         />
       )}
 
-      <SupplierComparison suppliers={view.suppliers} />
+      <SupplierComparison
+        suppliers={view.suppliers}
+        onApprove={handleApprove}
+        approvePending={approving}
+      />
 
       <ApprovalPanel
         status={view.status}
         recommendedSupplier={view.supplierName}
+        suppliers={view.suppliers}
         approvedBy={view.approvedBy ?? undefined}
         approvedAt={view.approvedAt ?? undefined}
         onApprove={handleApprove}

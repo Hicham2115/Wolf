@@ -10,6 +10,7 @@ export type UploadSupplierCsvInput = {
 export type UploadSupplierCsvResult = {
   duplicate: boolean
   message: string
+  outcomes: { changed: boolean }[]
 }
 
 export class SupplierCsvUploadError extends Error {
