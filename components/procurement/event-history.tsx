@@ -1,18 +1,36 @@
 "use client"
 
 import { useState } from "react"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import type { HistoryEvent } from "@/lib/mock-data"
 
-export function EventHistory({ events }: { events: HistoryEvent[] }) {
+export type HistoryEvent = {
+  id: string
+  time: string
+  title: string
+  detail: string
+  status: "Completed" | "Action required"
+}
+
+export function EventHistory({
+  events,
+  onReplay,
+}: {
+  events: HistoryEvent[]
+  onReplay: () => Promise<string>
+}) {
   const [replayMessage, setReplayMessage] = useState<string | null>(null)
+  const [replaying, setReplaying] = useState(false)
 
-  function handleReplay() {
-    setReplayMessage("Event already processed. No changes applied.")
-    toast.info("Event already processed. Decision unchanged.")
+  async function handleReplay() {
+    setReplaying(true)
+    try {
+      const message = await onReplay()
+      setReplayMessage(message)
+    } finally {
+      setReplaying(false)
+    }
   }
 
   return (
@@ -46,8 +64,8 @@ export function EventHistory({ events }: { events: HistoryEvent[] }) {
         </ol>
 
         <div className="mt-6 flex items-center gap-3 border-t pt-4">
-          <Button variant="outline" size="sm" onClick={handleReplay}>
-            Replay latest event
+          <Button variant="outline" size="sm" onClick={handleReplay} disabled={replaying}>
+            {replaying ? "Replaying..." : "Replay latest event"}
           </Button>
           {replayMessage && (
             <span className="text-xs text-muted-foreground">{replayMessage}</span>

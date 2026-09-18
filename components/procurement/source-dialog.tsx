@@ -11,9 +11,16 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { sourceRowPreview } from "@/lib/mock-data"
 
-export function SourceDialog() {
+export function SourceDialog({
+  file,
+  row,
+  columns,
+}: {
+  file: string
+  row: number
+  columns: { label: string; value: string }[]
+}) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -25,15 +32,15 @@ export function SourceDialog() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {sourceRowPreview.file} — row {sourceRowPreview.row}
+            {file} — row {row}
           </DialogTitle>
           <DialogDescription>
             Raw values as received from the supplier feed.
           </DialogDescription>
         </DialogHeader>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-md border p-4 text-sm">
-          {sourceRowPreview.columns.map((column) => (
-            <div key={column.key} className="contents">
+          {columns.map((column) => (
+            <div key={column.label} className="contents">
               <dt className="text-muted-foreground">{column.label}</dt>
               <dd className="font-mono">{column.value}</dd>
             </div>
