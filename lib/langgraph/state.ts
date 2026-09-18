@@ -5,7 +5,7 @@ export type DecisionOutcome = {
   decisionId: string
   productId: string
   changed: boolean
-  status: "APPROVED" | "STALE" | "UNCHANGED"
+  status: "REVIEW_REQUIRED" | "STALE" | "UNCHANGED"
   previousSupplierId: string | null
   previousTotal: number | null
   previousUnitPrice: number | null

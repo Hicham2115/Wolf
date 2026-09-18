@@ -11,7 +11,7 @@ import {
   CardFooter,
 } from "@/components/ui/card"
 import { formatEUR, formatNumber } from "@/lib/format"
-import type { DecisionStatus } from "@/lib/mock-data"
+import type { DecisionStatusValue as DecisionStatus } from "@/lib/procurement/types"
 
 export function RecommendationCard({
   status,

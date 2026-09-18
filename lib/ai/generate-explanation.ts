@@ -4,10 +4,14 @@ export type ExplanationInput = {
   previousSupplier: string
   previousUnitPrice: number
   previousTotal: number
+  /** The previous supplier's own new price — what actually changed at the source. */
+  updatedSupplierUnitPrice: number
+  updatedSupplierTotal: number
   recommendedSupplier: string
   recommendedUnitPrice: number
   recommendedTotal: number
   currency: string
+  /** Saving of the recommendation vs staying with the previous supplier at their new price. */
   saving: number | null
 }
 
@@ -21,15 +25,17 @@ function money(value: number, currency: string): string {
  * derive them.
  */
 function deterministicExplanation(input: ExplanationInput): string {
-  const priceLine = `${input.previousSupplier} updated the unit price from ${money(input.previousUnitPrice, input.currency)} to ${money(input.recommendedUnitPrice, input.currency)}`
+  const priceLine = `${input.previousSupplier} updated the unit price from ${money(input.previousUnitPrice, input.currency)} to ${money(input.updatedSupplierUnitPrice, input.currency)}, changing the total cost from ${money(input.previousTotal, input.currency)} to ${money(input.updatedSupplierTotal, input.currency)}`
+
   const sameSupplier = input.previousSupplier === input.recommendedSupplier
   if (sameSupplier) {
-    return `${priceLine}, changing the total cost from ${money(input.previousTotal, input.currency)} to ${money(input.recommendedTotal, input.currency)}.`
+    return `${priceLine}.`
   }
+
   const savingLine = input.saving
     ? ` This is ${money(input.saving, input.currency)} lower than continuing with ${input.previousSupplier}.`
     : ""
-  return `${priceLine}, increasing the total cost from ${money(input.previousTotal, input.currency)} to ${money(input.recommendedTotal, input.currency)}. ${input.recommendedSupplier} now offers the same quantity at ${money(input.recommendedUnitPrice, input.currency)} per unit.${savingLine}`
+  return `${priceLine}. ${input.recommendedSupplier} now offers the same quantity at ${money(input.recommendedUnitPrice, input.currency)} per unit, for a total of ${money(input.recommendedTotal, input.currency)}.${savingLine}`
 }
 
 /**
@@ -44,15 +50,13 @@ export async function generateExplanation(input: ExplanationInput): Promise<stri
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return fallback
 
-  const prompt = `Write one short, plain sentence (max 40 words) explaining a procurement recommendation change to a buyer. Use ONLY the numbers given below verbatim — do not calculate, round, or invent anything.
+  const prompt = `Write one short, plain sentence (max 40 words) explaining a procurement recommendation change to a buyer. Use ONLY the numbers given below verbatim — do not calculate, round, or invent anything. Keep each supplier's own price change separate from the other supplier's price.
 
-Previous supplier: ${input.previousSupplier}
-Previous unit price: ${money(input.previousUnitPrice, input.currency)}
-Previous total: ${money(input.previousTotal, input.currency)}
+${input.previousSupplier} previous unit price: ${money(input.previousUnitPrice, input.currency)} (total ${money(input.previousTotal, input.currency)})
+${input.previousSupplier} new unit price: ${money(input.updatedSupplierUnitPrice, input.currency)} (total ${money(input.updatedSupplierTotal, input.currency)})
 New recommended supplier: ${input.recommendedSupplier}
-New unit price: ${money(input.recommendedUnitPrice, input.currency)}
-New total: ${money(input.recommendedTotal, input.currency)}
-${input.saving ? `Saving vs previous: ${money(input.saving, input.currency)}` : ""}
+${input.recommendedSupplier} unit price: ${money(input.recommendedUnitPrice, input.currency)} (total ${money(input.recommendedTotal, input.currency)})
+${input.saving ? `Saving of recommendation vs staying with ${input.previousSupplier}: ${money(input.saving, input.currency)}` : ""}
 
 Return only the sentence, no preamble.`
 

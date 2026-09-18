@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cn } from "cn"
 import { formatEUR } from "@/lib/format"
-import type { SupplierOffer } from "@/lib/mock-data"
+import type { SupplierComparisonRow as SupplierOffer } from "@/lib/procurement/types"
 
 const statusBadgeClass: Record<SupplierOffer["status"], string> = {
   Approved: "bg-emerald-600 text-white",

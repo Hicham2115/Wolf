@@ -1,7 +1,7 @@
 import { CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import type { DecisionStatus } from "@/lib/mock-data"
+import type { DecisionStatusValue as DecisionStatus } from "@/lib/procurement/types"
 
 export function ApprovalPanel({
   status,

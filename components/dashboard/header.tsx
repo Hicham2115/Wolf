@@ -17,7 +17,7 @@ export function DashboardHeader() {
   void pathname;
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-4 border-b border-[#31514a] bg-[#14352f] px-4 md:px-6">
+    <header className="flex h-10 shrink-0 items-center gap-4 border-b border-[#31514a] bg-[#14352f] px-4 md:px-6">
       <div className="flex items-center gap-3">
         <Sheet>
           <SheetTrigger
@@ -57,8 +57,8 @@ export function DashboardHeader() {
             </nav>
           </SheetContent>
         </Sheet>
-        <Info className="size-7 shrink-0 rounded-full bg-cyan-500 p-1.5 text-[#12332e]" />
-        <span className="text-sm text-foreground md:text-base">
+        <Info className="size-5 shrink-0 rounded-full bg-cyan-500 p-1 text-[#12332e]" />
+        <span className="text-xs text-foreground">
           Wolf Materials Lab · Synthetic commercial data · No sign-in · AI and
           voice simulated by default
         </span>

@@ -31,7 +31,7 @@ export async function persistDecisions(
         unit_price: rec.unitPrice,
         total_price: rec.totalPrice,
         currency: rec.currency,
-        status: "STALE",
+        status: outcome.status,
         current_version: outcome.version,
         source_id: offerRow?.source_id ?? state.sourceId,
         updated_at: new Date().toISOString(),
@@ -46,7 +46,7 @@ export async function persistDecisions(
       unit_price: rec.unitPrice,
       total_price: rec.totalPrice,
       currency: rec.currency,
-      status: "STALE",
+      status: outcome.status,
       source_id: offerRow?.source_id ?? state.sourceId,
       explanation: outcome.explanation,
     });

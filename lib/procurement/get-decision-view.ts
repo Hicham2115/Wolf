@@ -1,10 +1,28 @@
 import { createServiceClient } from "@/lib/supabase/server"
 import { compareOffers, savingVsPrevious } from "@/lib/procurement/calculations"
-import type { SupplierOfferRow } from "@/lib/procurement/types"
+import { getDashboardMetrics } from "@/lib/procurement/get-metrics"
+import type { SupplierOfferRow, DashboardMetrics } from "@/lib/procurement/types"
+
+/**
+ * This MVP tracks a single procurement decision at a time. Rather than
+ * hardcoding its id, we look up whatever decision currently exists so the
+ * app works from a freshly wiped database too.
+ */
+export async function getPrimaryDecisionId(): Promise<string | null> {
+  const db = createServiceClient()
+  const { data } = await db
+    .from("decisions")
+    .select("id")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  return data?.id ?? null
+}
 
 export type DecisionView = {
   decisionId: string
   currentVersion: number
+  metrics: DashboardMetrics
   status: "approved" | "stale"
   product: string
   quantity: number
@@ -91,7 +109,7 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
   }))
   const compared = compareOffers(offers)
 
-  const isStale = decision.status === "STALE"
+  const isStale = decision.status === "STALE" || decision.status === "REVIEW_REQUIRED"
 
   let priceChange: DecisionView["priceChange"] = null
   let changeSummary: DecisionView["changeSummary"] = []
@@ -266,6 +284,7 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
   return {
     decisionId,
     currentVersion: decision.current_version,
+    metrics: await getDashboardMetrics(),
     status: isStale ? "stale" : "approved",
     product: productName,
     quantity: Number(decision.quantity),

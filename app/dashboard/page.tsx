@@ -2,9 +2,13 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
-import { metrics } from "@/lib/mock-data"
+import { getDashboardMetrics } from "@/lib/procurement/get-metrics"
 
-export default function Page() {
+export const dynamic = "force-dynamic"
+
+export default async function Page() {
+  const metrics = await getDashboardMetrics()
+
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="font-heading text-2xl font-semibold tracking-tight">

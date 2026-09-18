@@ -9,3 +9,11 @@ export function formatEUR(value: number) {
 export function formatNumber(value: number) {
   return new Intl.NumberFormat("en-IE").format(value)
 }
+
+export function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}

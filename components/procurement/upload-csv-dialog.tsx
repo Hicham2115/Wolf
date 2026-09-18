@@ -6,13 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -21,32 +14,28 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-const SUPPLIERS = [
-  { id: "supplier-a", label: "Supplier A" },
-  { id: "supplier-b", label: "Supplier B" },
-  { id: "supplier-c", label: "Supplier C" },
-]
-
 export function UploadCsvDialog({
   onUploaded,
+  trigger,
 }: {
   onUploaded: (result: { duplicate: boolean; message: string }) => void
+  trigger?: React.ReactElement
 }) {
   const [open, setOpen] = useState(false)
-  const [supplierId, setSupplierId] = useState("supplier-a")
+  const [supplierName, setSupplierName] = useState("")
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!file) return
+    if (!file || !supplierName.trim()) return
     setBusy(true)
     setErrors([])
     try {
       const form = new FormData()
       form.set("file", file)
-      form.set("supplierId", supplierId)
+      form.set("supplierName", supplierName.trim())
 
       const res = await fetch("/api/supplier/upload", { method: "POST", body: form })
       const data = await res.json()
@@ -69,7 +58,7 @@ export function UploadCsvDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" />}>
+      <DialogTrigger render={trigger ?? <Button variant="outline" />}>
         <Upload className="size-4" />
         Upload CSV
       </DialogTrigger>
@@ -82,19 +71,13 @@ export function UploadCsvDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="supplier">Supplier</Label>
-            <Select value={supplierId} onValueChange={(v) => setSupplierId(v as string)}>
-              <SelectTrigger id="supplier" className="w-full">
-                <SelectValue placeholder="Select a supplier" />
-              </SelectTrigger>
-              <SelectContent>
-                {SUPPLIERS.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="supplier-name">Supplier name</Label>
+            <Input
+              id="supplier-name"
+              placeholder="e.g. Supplier A"
+              value={supplierName}
+              onChange={(e) => setSupplierName(e.target.value)}
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -115,7 +98,7 @@ export function UploadCsvDialog({
             </ul>
           )}
 
-          <Button type="submit" disabled={!file || busy}>
+          <Button type="submit" disabled={!file || !supplierName.trim() || busy}>
             {busy ? "Uploading..." : "Upload and process"}
           </Button>
         </form>

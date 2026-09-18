@@ -4,8 +4,9 @@ import type { NormalizedOfferInput } from "@/lib/procurement/types"
 
 // Demo payload used by the "Simulate supplier update" button when no
 // explicit rows are supplied: Supplier A raising the sanding disc price.
-const DEMO_SOURCES: Record<string, { filename: string; rows: NormalizedOfferInput[] }> = {
+const DEMO_SOURCES: Record<string, { supplierName: string; filename: string; rows: NormalizedOfferInput[] }> = {
   "supplier-a": {
+    supplierName: "Supplier A",
     filename: "supplier_A_v2.csv",
     rows: [
       {
@@ -32,9 +33,10 @@ export async function POST(req: Request) {
 
     const filename: string | undefined = body.filename
     const rows: NormalizedOfferInput[] | undefined = body.rows
+    const supplierName: string | undefined = body.supplierName
 
     const source = rows
-      ? { filename: filename ?? `${supplierId}.csv`, rows }
+      ? { supplierName: supplierName ?? supplierId, filename: filename ?? `${supplierId}.csv`, rows }
       : DEMO_SOURCES[supplierId]
 
     if (!source) {
@@ -46,6 +48,7 @@ export async function POST(req: Request) {
 
     const result = await processSupplierSource({
       supplierId,
+      supplierName: source.supplierName,
       filename: source.filename,
       rows: source.rows,
     })

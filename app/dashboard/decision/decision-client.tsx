@@ -10,6 +10,7 @@ import { EvidencePanel } from "@/components/procurement/evidence-panel"
 import { SupplierComparison } from "@/components/procurement/supplier-comparison"
 import { ApprovalPanel } from "@/components/procurement/approval-panel"
 import { EventHistory } from "@/components/procurement/event-history"
+import { UploadCsvDialog } from "@/components/procurement/upload-csv-dialog"
 import type { DecisionView } from "@/lib/procurement/get-decision-view"
 
 const SUPPLIER_ID = "supplier-a"
@@ -96,11 +97,22 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
     }
   }
 
+  async function handleUploaded(result: { duplicate: boolean; message: string }) {
+    await refresh()
+    if (result.duplicate) {
+      toast.info(result.message)
+    } else {
+      toast.warning("Supplier update detected. 1 decision requires review.")
+    }
+  }
+
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
       <DecisionHeader
         onSimulate={handleSimulate}
         simulateDisabled={busy || view.status === "stale"}
+        actions={<UploadCsvDialog onUploaded={handleUploaded} />}
+        metrics={view.metrics}
       />
 
       <RecommendationCard

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cn } from "cn"
-import type { ChangeField } from "@/lib/mock-data"
+import type { ChangeField } from "@/lib/procurement/types"
 
 export function ChangeSummary({ fields }: { fields: ChangeField[] }) {
   return (

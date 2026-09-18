@@ -11,6 +11,7 @@ export async function finalize(
       status: "COMPLETED",
       processed_at: new Date().toISOString(),
       result: { outcomes: state.outcomes },
+      decision_id: state.outcomes[0]?.decisionId ?? null,
     })
     .eq("event_key", state.eventKey)
 

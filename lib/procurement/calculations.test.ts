@@ -7,8 +7,8 @@ import {
   compareOffers,
   buildRecommendation,
   savingVsPrevious,
-} from "./calculations"
-import type { SupplierOfferRow } from "./types"
+} from "./calculations.ts"
+import type { SupplierOfferRow } from "./types.ts"
 
 test("calculateTotal multiplies quantity by unit price", () => {
   assert.equal(calculateTotal(10000, 2.5), 25000)
