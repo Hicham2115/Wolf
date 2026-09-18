@@ -145,7 +145,7 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
     unitPrice: Number(row.unit_price),
     currency: row.currency,
   }))
-  const compared = compareOffers(offers)
+  const compared = compareOffers(offers, decision.recommended_supplier_id ?? undefined)
 
   const isStale = decision.status === "STALE" || decision.status === "REVIEW_REQUIRED"
   const isRejected = decision.status === "REJECTED"

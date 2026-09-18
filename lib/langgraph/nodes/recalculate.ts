@@ -45,7 +45,7 @@ export async function recalculate(
       currency: row.currency,
     }))
 
-    const compared = compareOffers(offers)
+    const compared = compareOffers(offers, decision.recommended_supplier_id ?? undefined)
     const recommendation = buildRecommendation(compared)
 
     const changed =

@@ -52,6 +52,28 @@ test("savingVsPrevious compares against the previous decision total", () => {
   assert.equal(savingVsPrevious(recommendation, 25000), 2000)
 })
 
+test("compareOffers keeps the preferred supplier on an exact tie", () => {
+  const tied: SupplierOfferRow[] = [
+    { supplierId: "supplier-x", supplierName: "Supplier X", productId: "p", sourceId: "s-x", sourceRow: 1, quantity: 10000, unitPrice: 2.5, currency: "EUR" },
+    { supplierId: "supplier-a", supplierName: "Supplier A", productId: "p", sourceId: "s-a", sourceRow: 1, quantity: 10000, unitPrice: 2.5, currency: "EUR" },
+  ]
+  const compared = compareOffers(tied, "supplier-a")
+  const recommended = compared.filter((o) => o.isRecommended)
+  assert.equal(recommended.length, 1)
+  assert.equal(recommended[0].supplierId, "supplier-a")
+})
+
+test("compareOffers falls back to the first offer on a tie with no preference", () => {
+  const tied: SupplierOfferRow[] = [
+    { supplierId: "supplier-x", supplierName: "Supplier X", productId: "p", sourceId: "s-x", sourceRow: 1, quantity: 10000, unitPrice: 2.5, currency: "EUR" },
+    { supplierId: "supplier-a", supplierName: "Supplier A", productId: "p", sourceId: "s-a", sourceRow: 1, quantity: 10000, unitPrice: 2.5, currency: "EUR" },
+  ]
+  const compared = compareOffers(tied)
+  const recommended = compared.filter((o) => o.isRecommended)
+  assert.equal(recommended.length, 1)
+  assert.equal(recommended[0].supplierId, "supplier-x")
+})
+
 test("compareOffers does not compare offers across different currencies", () => {
   const mixed: SupplierOfferRow[] = [
     ...offers,

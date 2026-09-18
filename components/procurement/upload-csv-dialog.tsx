@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Upload } from "lucide-react"
+import { Loader2, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -59,7 +59,13 @@ export function UploadCsvDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (uploadCsv.isPending) return
+        setOpen(next)
+      }}
+    >
       <DialogTrigger render={trigger ?? <Button variant="outline" />}>
         <Upload className="size-4" />
         Upload CSV
@@ -79,6 +85,7 @@ export function UploadCsvDialog({
               placeholder="e.g. Supplier A"
               value={supplierName}
               onChange={(e) => setSupplierName(e.target.value)}
+              disabled={uploadCsv.isPending}
             />
           </div>
 
@@ -89,6 +96,7 @@ export function UploadCsvDialog({
               type="file"
               accept=".csv,text/csv"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              disabled={uploadCsv.isPending}
             />
           </div>
 
@@ -104,8 +112,19 @@ export function UploadCsvDialog({
             type="submit"
             disabled={!file || !supplierName.trim() || uploadCsv.isPending}
           >
-            {uploadCsv.isPending ? "Uploading..." : "Upload and process"}
+            {uploadCsv.isPending && (
+              <Loader2 className="size-4 animate-spin" />
+            )}
+            {uploadCsv.isPending
+              ? "Analyzing offers with AI..."
+              : "Upload and process"}
           </Button>
+          {uploadCsv.isPending && (
+            <p className="text-center text-xs text-muted-foreground">
+              Running the decision engine against this data — this can take
+              a moment.
+            </p>
+          )}
         </form>
       </DialogContent>
     </Dialog>

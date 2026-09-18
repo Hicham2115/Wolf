@@ -1,7 +1,3 @@
-"use client"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 
@@ -13,26 +9,7 @@ export type HistoryEvent = {
   status: "Completed" | "Action required"
 }
 
-export function EventHistory({
-  events,
-  onReplay,
-}: {
-  events: HistoryEvent[]
-  onReplay: () => Promise<string>
-}) {
-  const [replayMessage, setReplayMessage] = useState<string | null>(null)
-  const [replaying, setReplaying] = useState(false)
-
-  async function handleReplay() {
-    setReplaying(true)
-    try {
-      const message = await onReplay()
-      setReplayMessage(message)
-    } finally {
-      setReplaying(false)
-    }
-  }
-
+export function EventHistory({ events }: { events: HistoryEvent[] }) {
   return (
     <Card>
       <CardHeader>
@@ -62,15 +39,6 @@ export function EventHistory({
             </li>
           ))}
         </ol>
-
-        <div className="mt-6 flex items-center gap-3 border-t pt-4">
-          <Button variant="outline" size="sm" onClick={handleReplay} disabled={replaying}>
-            {replaying ? "Replaying..." : "Replay latest event"}
-          </Button>
-          {replayMessage && (
-            <span className="text-xs text-muted-foreground">{replayMessage}</span>
-          )}
-        </div>
       </CardContent>
     </Card>
   )

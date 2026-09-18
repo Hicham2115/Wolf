@@ -27,8 +27,17 @@ export function hasPriceChanged(previousUnitPrice: number, currentUnitPrice: num
 /**
  * Ranks offers by total price. The cheapest same-currency offer is marked
  * recommended. Mixed currencies are never compared against each other.
+ *
+ * On an exact tie, `preferredSupplierId` (normally the currently
+ * recommended supplier) wins rather than whichever offer happens to sort
+ * first — otherwise the recommendation could silently flip between tied
+ * suppliers depending on fetch order, with no real price difference to
+ * justify it.
  */
-export function compareOffers(offers: SupplierOfferRow[]): ComparedOffer[] {
+export function compareOffers(
+  offers: SupplierOfferRow[],
+  preferredSupplierId?: string
+): ComparedOffer[] {
   const withTotals = offers.map((offer) => ({
     ...offer,
     totalPrice: calculateTotal(offer.quantity, offer.unitPrice),
@@ -36,9 +45,12 @@ export function compareOffers(offers: SupplierOfferRow[]): ComparedOffer[] {
   }))
 
   const comparable = new Set(withTotals.map((o) => o.currency)).size === 1
-  const cheapest = comparable
-    ? withTotals.reduce((min, o) => (o.totalPrice < min.totalPrice ? o : min), withTotals[0])
-    : undefined
+  let cheapest: (typeof withTotals)[number] | undefined
+  if (comparable) {
+    const lowestTotal = Math.min(...withTotals.map((o) => o.totalPrice))
+    const tied = withTotals.filter((o) => o.totalPrice === lowestTotal)
+    cheapest = tied.find((o) => o.supplierId === preferredSupplierId) ?? tied[0]
+  }
 
   return withTotals.map((offer) => ({
     ...offer,

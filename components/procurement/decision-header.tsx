@@ -1,16 +1,10 @@
-import { RefreshCw } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import type { DashboardMetrics } from "@/lib/procurement/types"
 
 export function DecisionHeader({
-  onSimulate,
-  simulateDisabled,
   actions,
   metrics,
 }: {
-  onSimulate: () => void
-  simulateDisabled: boolean
   actions?: React.ReactNode
   metrics: DashboardMetrics
 }) {
@@ -25,13 +19,7 @@ export function DecisionHeader({
             Review supplier recommendations, evidence and approval status.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {actions}
-          <Button variant="outline" onClick={onSimulate} disabled={simulateDisabled}>
-            <RefreshCw className="size-4" />
-            {simulateDisabled ? "Update pending review" : "Simulate supplier update"}
-          </Button>
-        </div>
+        <div className="flex flex-wrap items-center gap-2">{actions}</div>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

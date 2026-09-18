@@ -13,8 +13,6 @@ import { EventHistory } from "@/components/procurement/event-history"
 import { UploadCsvDialog } from "@/components/procurement/upload-csv-dialog"
 import type { DecisionView } from "@/lib/procurement/get-decision-view"
 
-const SUPPLIER_ID = "supplier-a"
-
 async function postJson(url: string, body?: unknown) {
   const res = await fetch(url, {
     method: "POST",
@@ -33,23 +31,6 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
   async function refresh() {
     const res = await fetch(`/api/decisions/${view.decisionId}`)
     if (res.ok) setView(await res.json())
-  }
-
-  async function handleSimulate() {
-    setBusy(true)
-    try {
-      const result = await postJson("/api/events/process", { supplierId: SUPPLIER_ID })
-      await refresh()
-      if (result.duplicate) {
-        toast.info("Event already processed. No changes applied.")
-      } else {
-        toast.warning("Supplier update detected. 1 decision requires review.")
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not simulate update")
-    } finally {
-      setBusy(false)
-    }
   }
 
   async function handleApprove() {
@@ -81,18 +62,6 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
     }
   }
 
-  async function handleReplay(): Promise<string> {
-    try {
-      const result = await postJson("/api/events/replay")
-      toast.info(result.message)
-      return result.message
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Replay failed"
-      toast.error(message)
-      return message
-    }
-  }
-
   async function handleUploaded(result: { duplicate: boolean; message: string }) {
     await refresh()
     if (result.duplicate) {
@@ -105,8 +74,6 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
       <DecisionHeader
-        onSimulate={handleSimulate}
-        simulateDisabled={busy || view.status === "stale"}
         actions={<UploadCsvDialog onUploaded={handleUploaded} />}
         metrics={view.metrics}
       />
@@ -149,7 +116,7 @@ export function DecisionClient({ initial }: { initial: DecisionView }) {
         onReject={handleReject}
       />
 
-      <EventHistory events={view.history} onReplay={handleReplay} />
+      <EventHistory events={view.history} />
     </div>
   )
 }
