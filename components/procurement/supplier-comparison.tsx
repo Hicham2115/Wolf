@@ -16,6 +16,7 @@ const statusBadgeClass: Record<SupplierOffer["status"], string> = {
   Approved: "bg-emerald-600 text-white",
   Recommended: "bg-emerald-600 text-white",
   Updated: "bg-amber-500 text-white",
+  Rejected: "bg-muted text-muted-foreground",
   Available: "",
 }
 

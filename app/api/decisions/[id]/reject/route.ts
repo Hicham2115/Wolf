@@ -24,5 +24,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   })
   if (approvalError) return NextResponse.json({ error: approvalError.message }, { status: 500 })
 
+  const { error: updateError } = await db
+    .from("decisions")
+    .update({ status: "REJECTED", updated_at: new Date().toISOString() })
+    .eq("id", id)
+  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
+
   return NextResponse.json({ rejected: true })
 }

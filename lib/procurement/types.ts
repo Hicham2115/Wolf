@@ -44,7 +44,7 @@ export type NormalizedOfferInput = {
   sourceRow: number
 }
 
-export type DecisionStatusValue = "approved" | "stale"
+export type DecisionStatusValue = "approved" | "stale" | "rejected"
 
 export type ChangeField = {
   field: string
@@ -60,7 +60,7 @@ export type SupplierComparisonRow = {
   quantity: number
   total: number
   saving: number | null
-  status: "Approved" | "Recommended" | "Updated" | "Available"
+  status: "Approved" | "Recommended" | "Updated" | "Available" | "Rejected"
 }
 
 export type DashboardMetrics = {

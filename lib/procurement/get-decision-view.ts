@@ -23,7 +23,7 @@ export type DecisionView = {
   decisionId: string
   currentVersion: number
   metrics: DashboardMetrics
-  status: "approved" | "stale"
+  status: "approved" | "stale" | "rejected"
   product: string
   quantity: number
   supplierName: string
@@ -58,7 +58,7 @@ export type DecisionView = {
     quantity: number
     total: number
     saving: number | null
-    status: "Approved" | "Recommended" | "Updated" | "Available"
+    status: "Approved" | "Recommended" | "Updated" | "Available" | "Rejected"
   }[]
   history: { id: string; time: string; title: string; detail: string; status: "Completed" | "Action required" }[]
 }
@@ -109,6 +109,7 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
   const compared = compareOffers(offers)
 
   const isStale = decision.status === "STALE" || decision.status === "REVIEW_REQUIRED"
+  const isRejected = decision.status === "REJECTED"
 
   let priceChange: DecisionView["priceChange"] = null
   let changeSummary: DecisionView["changeSummary"] = []
@@ -217,7 +218,7 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
   const suppliers: DecisionView["suppliers"] = compared.map((offer) => {
     let status: DecisionView["suppliers"][number]["status"] = "Available"
     if (offer.supplierId === decision.recommended_supplier_id) {
-      status = isStale ? "Recommended" : "Approved"
+      status = isRejected ? "Rejected" : isStale ? "Recommended" : "Approved"
     } else if (previousVersion && offer.supplierId === previousVersion.supplier_id) {
       status = "Updated"
     }
@@ -273,7 +274,7 @@ export async function getDecisionView(decisionId: string): Promise<DecisionView 
     decisionId,
     currentVersion: decision.current_version,
     metrics: await getDashboardMetrics(),
-    status: isStale ? "stale" : "approved",
+    status: isRejected ? "rejected" : isStale ? "stale" : "approved",
     product: productName,
     quantity: Number(decision.quantity),
     supplierName: winner?.supplierName ?? "",

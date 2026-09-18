@@ -1,4 +1,4 @@
-import { CheckCircle2, AlertTriangle } from "lucide-react"
+import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "cn"
@@ -37,6 +37,8 @@ export function RecommendationCard({
   sourceVersion?: string
 }) {
   const isApproved = status === "approved"
+  const isRejected = status === "rejected"
+  const needsReview = status === "stale"
 
   return (
     <Card>
@@ -72,17 +74,21 @@ export function RecommendationCard({
               className={
                 isApproved
                   ? "bg-emerald-600 text-white"
-                  : "bg-amber-500 text-white"
+                  : isRejected
+                    ? "bg-muted text-muted-foreground"
+                    : "bg-amber-500 text-white"
               }
             >
               {isApproved ? (
                 <CheckCircle2 className="size-3" />
+              ) : isRejected ? (
+                <XCircle className="size-3" />
               ) : (
                 <AlertTriangle className="size-3" />
               )}
-              {isApproved ? "APPROVED" : "REVIEW REQUIRED"}
+              {isApproved ? "APPROVED" : isRejected ? "REJECTED" : "REVIEW REQUIRED"}
             </Badge>
-            {saving !== null && !isApproved && (
+            {saving !== null && needsReview && (
               <span className="text-xs text-emerald-400">
                 Potential saving {formatEUR(saving)}
               </span>
@@ -92,7 +98,7 @@ export function RecommendationCard({
       </CardContent>
 
       <CardFooter className="flex flex-wrap items-center justify-between gap-3 bg-transparent">
-        {isApproved ? (
+        {isApproved && (
           <div className="text-xs text-muted-foreground">
             Approved by <span className="font-medium text-foreground">{approvedBy}</span>
             {" · "}
@@ -100,13 +106,20 @@ export function RecommendationCard({
             {" · source "}
             <span className="font-mono">{sourceVersion}</span>
           </div>
-        ) : (
+        )}
+        {needsReview && (
           <div className="text-xs text-muted-foreground">
             The previous approval no longer matches the source data.
           </div>
         )}
+        {isRejected && (
+          <div className="text-xs text-muted-foreground">
+            This recommendation was rejected. Upload new supplier data for a
+            fresh recommendation.
+          </div>
+        )}
 
-        {!isApproved && (
+        {needsReview && (
           <div className="flex gap-2">
             <a href="#evidence" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
               Review decision
